@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: pulumi
+  name: openebs-jiva-csi-iscsiadm
+  namespace: openebs
+data:
+  iscsiadm: |
+    #!/bin/sh
+    iscsid_pid=$(pgrep iscsid)
+
+    nsenter --mount="/proc/${iscsid_pid}/ns/mnt" --net="/proc/${iscsid_pid}/ns/net" -- /usr/local/sbin/iscsiadm "$@" 
