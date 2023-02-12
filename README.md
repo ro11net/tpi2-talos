@@ -53,7 +53,6 @@ You need to have the following apps installed on your workstation. This guide wi
 - talosctl >=1.3.4
 
 ## Clone this Repository
-The steps in this guide will navigate your through the directory structure container in this repo, but there are additional steps at the end of this page if you would like to create the talos image or firmware on your own or use a different version.
 - This steps within this guide have been tested with Ubuntu 20.04 and I cannot guarantee you wont have issues using a different operating system.
 
 ## Build the firmware
