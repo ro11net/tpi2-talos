@@ -66,8 +66,6 @@ You need to have the following apps installed on your workstation. This guide wi
 
 To install Talos on the Jetson Nano, we will be using a upstream version of `u-boot` with patches from NVIDIA. This is provided by Sidero Labs, but we will need to use crane to replace the binary in the existing firmware package.
 
-#
-
 Before we can get the u-boot binary for the firmware, we need to install crane-cli. If you are not familiar with Go, this could seem complicated, but it's a pretty simple process.
 
 First, pull Google's go-containerregistry from here:
@@ -120,10 +118,6 @@ crane --platform=linux/arm64 export ghcr.io/siderolabs/u-boot:v1.3.0-alpha.0-25-
 
 To flash the firmware on to the Jetson Nano, we want to leave the compute module in the IO board it came in for now. The compute module will also need to be placed into recovery mode. To put the Jetson Nano into Recovery Mode, for the Jetson Nano Developer Kit A02, short Pin 3 and Pin 4 of J40 with a jumper pin and turn on the power. For the Developer Kit B01 and 2GB, short Pin9 and Pin10 of J50 with jumper pins and turn on the power.
 
-#
-
-#
-
 Connect a USB-microUSB cable to the microUSB/5V power on the IO board and run the following command to ensure it is connected to your computer
 
 ```shell
@@ -139,8 +133,6 @@ sudo ./flash.sh p3448-0000-max-spi external
 ```
 
 There will be a lot of output displayed and it make take a few minutes to flash.
-
-#
 
 Repeat this process with all 4 board.
 
@@ -208,13 +200,9 @@ You can now insert the Jetson Nano compute modules into the Turing Pi 2 and appl
 
 > **NOTE:** I have seen issues with the boards rebooting if it is done through the tpi cli from the BMC console. The best way to reboot until TPI fixes the bugs with the BMC firmware is to pull power completely and power on from scratch.
 
-#
-
 If you want to ensure the device is booting properly, you may use a USB-TTL cable to monitor a serial connection to the Jetson Nano board.
 
 > **NOTE:** Currently, even from the TPI2's BMC console, you cannot get access to the UART connection when Talos has been installed when it is in the TPI2 board.
-
-#
 
 > **ANOTHER NOTE:** If you are having issues with your Turing Pi 2 booting the nodes at all, make sure the BMC battery is removed, as it is currently known to cause issues with the BMC booting.
 
@@ -280,11 +268,7 @@ machine:
 ### snippet ###
 ```
 
-#
-
-This next part is important to the high availability of our cluster. Scince we will be using 3 controlplane nodes, we are going to create a virtual IP on each controlplane nodes which will be used to join new nodes to the cluster as well as access via kubectl or talosctl.
-
-#
+This next part is important to the high availability of our cluster. Since we will be using 3 controlplane nodes, we are going to create a virtual IP on each controlplane nodes which will be used to join new nodes to the cluster as well as access via kubectl or talosctl.
 
 - Configure the hostname and vip
 
@@ -304,13 +288,9 @@ machine:
 ### snippet ###
 ```
 
-#
-
 Next, change the installation location on the SD card. Because we will need the iscsi tools provided by sidero to use Jiva, this is where the extension must be added as well.
 
 > **NOTE:** Do not use the nvme slot here. Talos will not be able to use it as the boot drive. Instead, we'll add the NVMe slot to be mounted where Jiva can use it.
-
-#
 
 - Change the install disk to your SD card and add the iscsi extension.
 
@@ -330,13 +310,9 @@ machine:
 
 > **NOTEL:** If you need to verify existing disks on your device, you can do so with `talosctl -n <node-ip> disks --insecure`
 
-#
-
 This is where we will add the nvme drive to be used for our distributed storage and give our applications the best performance possible.
 
 > **NOTE:** This step is optional. If you would like to use the SD card for your distributed storage with Jiva, do not configure anything here.
-
-#
 
 - Add the following under `machine`. The device will be your NVMe drive and the mountpoint will be `/var/openebs`:
 
@@ -349,11 +325,7 @@ machine:
         - mountpoint: /var/openebs # This is the location Jiva will use
 ```
 
-#
-
 The last thing we will change is `cluster.apiServer.certSANs`. This should have **ALL** potential alternative names for the API server's certs. We will want to Virtual IP as well as all the controlplane IPs and hostnames added here so we can authenticate to any of them if necessary. We are removing the taints from the controlplane nodes by settings `cluster.allowSchedulingOnControlPlanes` to `true`. This is done because we want all pods to be able to run on all nodes using all the resources we have available.
-
-#
 
 ```yaml
 cluster:
@@ -471,7 +443,7 @@ machine:
         - mountpoint: /var/openebs # This is the location Jiva will use
 ```
 
-# Apply configs
+## Apply configs
 
 Now that all of your configs are ready, we can start applying them. Make sure you see the network and power lights on on the Turing Pi.
 
@@ -497,8 +469,6 @@ talosctl config merge ./talosconfig
 
 Now we can follow the logs on our node with `talosctl -n <virtual-ip> logs etcd -f` or the individual nodes logs with `talosctl -n <node-1-ip> dmesg -f`
 
-#
-
 We still don't have a kubeconfig though to run kubernetes commands on our node. To generate this with talosctl run:
 
 ```shell
@@ -506,8 +476,6 @@ talosctl kubeconfig -f -n <virtual-ip>
 ```
 
 Now you can run `kubectl get nodes` and see if Node 1 is ready.
-
-#
 
 Next, apply the configs for all the other nodes. Now that node 1 has been bootstrapped, the rest of these can be applied at once if you like.
 
@@ -518,8 +486,6 @@ talosctl apply-config --insecure -n <node-4-ip> --file worker.yaml
 ```
 
 Once you're cluster is up and running, and all nodes show `Ready` you can continue to the next step
-
-#
 
 > **NOTE:** `talosctl` also provides us an option to view oour resource using with the following command:
 
@@ -556,8 +522,6 @@ NODE         NAMESPACE   TYPE              ID               VERSION   NAME      
 192.168.0.101   runtime     ExtensionStatus   tmp.oqYMf2FxtU   1         iscsi-tools   v0.1.1
 ```
 
-#
-
 Next, check the services to make sure they are running
 
 ```shell
@@ -584,9 +548,7 @@ Check this on all 4 nodes before continuing on to the next step
 
 ## Install OpenEVS Jiva
 
-The default Pod Security Admission in our configuration will not immediately allow us to run priviledged pods on Kubernetes so first, we need to allow priviled pods in the openebs namespace so Jiva will be able to run.
-
-#
+Our configuration's default Pod Security Admission will not immediately allow us to run privileged pods on Kubernetes. First, we need to allow privileged pods in the openebs namespace so Jiva can run.
 
 - First create the namespace
 
@@ -635,11 +597,7 @@ kubectl taint node rollnet-tpi-2 node-role.kubernetes.io/control-plane:NoSchedul
 kubectl taint node rollnet-tpi-3 node-role.kubernetes.io/control-plane:NoSchedule-
 ```
 
-#
-
-Since Jiva assumes iscisd to be running natively on the host and not as a Talos extension service, we need to modify the CSI node daemonset to enable it to find the PID of the iscsid service. The default config map used by Jiva also needs to be modified so that it can execute iscsiadm commands inside the PID namespace of the iscsid service.
-
-#
+Since Jiva assumes iscsid to be running natively on the host and not as a Talos extension service, we need to modify the CSI node daemon set to enable it to find the PID of the iscsid service. In addition, Jiva also needs to modify the default config map to execute iscsiadm commands inside the PID namespace of the iscsid service.
 
 Create a file named `configmap.yaml` with the following contents (an example is also stored in the manifest directory of this repo):
 
@@ -647,16 +605,20 @@ Create a file named `configmap.yaml` with the following contents (an example is 
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  labels:
-    app.kubernetes.io/managed-by: pulumi
   name: openebs-jiva-csi-iscsiadm
   namespace: openebs
+  labels:
+    app.kubernetes.io/managed-by: pulumi
 data:
   iscsiadm: |
     #!/bin/sh
+    set -euo pipefail
+
+    # Find the process ID of the iscsid daemon
     iscsid_pid=$(pgrep iscsid)
 
-    nsenter --mount="/proc/${iscsid_pid}/ns/mnt" --net="/proc/${iscsid_pid}/ns/net" -- /usr/local/sbin/iscsiadm "$@"
+    # Enter the namespaces of the iscsid process and execute iscsiadm with given arguments
+    nsenter --mount=/proc/${iscsid_pid}/ns/mnt --net=/proc/${iscsid_pid}/ns/net -- /usr/local/sbin/iscsiadm "$@"
 ```
 
 Apply this file to replace the existing configmap:
@@ -697,30 +659,54 @@ spec:
         app: busybox
     spec:
       containers:
-        - resources:
-            limits:
-              cpu: 0.5
-          name: busybox
+        - name: busybox
           image: busybox:1.35
           command: ["sh", "-c", "echo Container 1 is Running ; sleep 3600"]
           imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 500m
+              memory: 264Mi
+            requests:
+              cpu: 250m
+              memory: 128Mi
           ports:
             - containerPort: 3306
               name: busybox
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: demo-vol1
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 3000
+            readOnlyRootFilesystem: true
       volumes:
         - name: demo-vol1
           persistentVolumeClaim:
             claimName: example-jiva-csi-pvc
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: 8080
+        initialDelaySeconds: 10
+        timeoutSeconds: 5
+        periodSeconds: 30
+        failureThreshold: 3
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: 8080
+        initialDelaySeconds: 30
+        timeoutSeconds: 5
+        periodSeconds: 60
+        failureThreshold: 5
 ```
 
 Create a file named `pvc-test.yaml` with the following contents:
 
 ```yaml
-kind: PersistentVolumeClaim
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: example-jiva-csi-pvc
 spec:
