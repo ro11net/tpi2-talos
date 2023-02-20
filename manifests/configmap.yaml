@@ -1,13 +1,17 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  labels:
-    app.kubernetes.io/managed-by: pulumi
   name: openebs-jiva-csi-iscsiadm
   namespace: openebs
+  labels:
+    app.kubernetes.io/managed-by: pulumi
 data:
   iscsiadm: |
     #!/bin/sh
+    set -euo pipefail
+
+    # Find the process ID of the iscsid daemon
     iscsid_pid=$(pgrep iscsid)
 
-    nsenter --mount="/proc/${iscsid_pid}/ns/mnt" --net="/proc/${iscsid_pid}/ns/net" -- /usr/local/sbin/iscsiadm "$@" 
+    # Enter the namespaces of the iscsid process and execute iscsiadm with given arguments
+    nsenter --mount=/proc/${iscsid_pid}/ns/mnt --net=/proc/${iscsid_pid}/ns/net -- /usr/local/sbin/iscsiadm "$@"

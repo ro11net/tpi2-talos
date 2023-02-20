@@ -17,12 +17,16 @@ spec:
         app: busybox
     spec:
       containers:
-      - resources:
-          limits:
-            cpu: 0.5
-        name: busybox
+      - name: busybox
         image: busybox:1.35
         command: ['sh', '-c', 'echo Container 1 is Running ; sleep 3600']
+        resources:
+          limits:
+            cpu: 500m
+            memory: "256Mi"
+          requests:
+            cpu: 200m
+            memory: "128Mi"
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3306
