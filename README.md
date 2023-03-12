@@ -612,13 +612,12 @@ metadata:
 data:
   iscsiadm: |
     #!/bin/sh
-    set -euo pipefail
 
     # Find the process ID of the iscsid daemon
     iscsid_pid=$(pgrep iscsid)
 
     # Enter the namespaces of the iscsid process and execute iscsiadm with given arguments
-    nsenter --mount=/proc/${iscsid_pid}/ns/mnt --net=/proc/${iscsid_pid}/ns/net -- /usr/local/sbin/iscsiadm "$@"
+    nsenter --mount="/proc/${iscsid_pid}/ns/mnt" --net="/proc/${iscsid_pid}/ns/net" -- /usr/local/sbin/iscsiadm "$@"
 ```
 
 Apply this file to replace the existing configmap:
